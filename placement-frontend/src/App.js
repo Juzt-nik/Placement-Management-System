@@ -2,6 +2,9 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 
+// Landing
+import LandingPage from './pages/LandingPage';
+
 // Auth pages
 import Login from './pages/Login';
 import Activate from './pages/Activate';
@@ -30,16 +33,6 @@ import OfficerPlacements from './pages/officer/OfficerPlacements';
 import OfficerReports from './pages/officer/OfficerReports';
 import OfficerProfile from './pages/officer/OfficerProfile';
 
-function HomeRedirect() {
-  const { user, loading } = useAuth();
-  if (loading) return null;
-  if (!user) return <Navigate to="/login" replace />;
-  if (user.role === 'student') return <Navigate to="/student/dashboard" replace />;
-  if (user.role === 'faculty' || user.role === 'hod') return <Navigate to="/faculty/dashboard" replace />;
-  if (user.role === 'placement_officer' || user.role === 'admin') return <Navigate to="/officer/dashboard" replace />;
-  return <Navigate to="/login" replace />;
-}
-
 function Guard({ children, roles }) {
   const { user, loading } = useAuth();
   if (loading) return null;
@@ -53,9 +46,12 @@ export default function App() {
     <AuthProvider>
       <Router>
         <Routes>
+          {/* Public landing page — always accessible */}
+          <Route path="/" element={<LandingPage />} />
+
+          {/* Auth */}
           <Route path="/login" element={<Login />} />
           <Route path="/activate" element={<Activate />} />
-          <Route path="/" element={<HomeRedirect />} />
 
           {/* Student */}
           <Route path="/student/dashboard" element={<Guard roles={['student']}><StudentDashboard /></Guard>} />
@@ -81,7 +77,8 @@ export default function App() {
           <Route path="/officer/reports" element={<Guard roles={['placement_officer','admin']}><OfficerReports /></Guard>} />
           <Route path="/officer/profile" element={<Guard roles={['placement_officer','admin']}><OfficerProfile /></Guard>} />
 
-          <Route path="*" element={<HomeRedirect />} />
+          {/* Catch-all → home */}
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </Router>
     </AuthProvider>

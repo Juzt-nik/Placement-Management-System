@@ -1,21 +1,144 @@
 import React, { useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import {
-  LayoutDashboard, Users, Building2, Briefcase, ClipboardList,
-  Award, BarChart3, GraduationCap, LogOut, Menu, X, ChevronRight,
-  Settings, HelpCircle
-} from 'lucide-react';
 
 const navItems = [
-  { label: 'Dashboard', icon: LayoutDashboard, path: '/dashboard', roles: ['admin', 'placement_officer', 'faculty', 'hod', 'student'] },
-  { label: 'Students', icon: Users, path: '/students', roles: ['admin', 'placement_officer', 'faculty', 'hod'] },
-  { label: 'Organizations', icon: Building2, path: '/organizations', roles: ['admin', 'placement_officer', 'faculty', 'hod'] },
-  { label: 'Internships', icon: Briefcase, path: '/internships', roles: ['admin', 'placement_officer', 'faculty', 'hod', 'student'] },
-  { label: 'Applications', icon: ClipboardList, path: '/applications', roles: ['admin', 'placement_officer', 'faculty', 'hod', 'student'] },
-  { label: 'Placements', icon: Award, path: '/placements', roles: ['admin', 'placement_officer', 'faculty', 'hod'] },
-  { label: 'Reports', icon: BarChart3, path: '/reports', roles: ['faculty', 'hod', 'placement_officer'] },
+  { label: 'Dashboard', icon: 'dashboard', path: '/dashboard', roles: ['admin', 'placement_officer', 'faculty', 'hod', 'student'] },
+  { label: 'Students', icon: 'people', path: '/students', roles: ['admin', 'placement_officer', 'faculty', 'hod'] },
+  { label: 'Organizations', icon: 'corporate_fare', path: '/organizations', roles: ['admin', 'placement_officer', 'faculty', 'hod'] },
+  { label: 'Internships', icon: 'work', path: '/internships', roles: ['admin', 'placement_officer', 'faculty', 'hod', 'student'] },
+  { label: 'Applications', icon: 'list_alt', path: '/applications', roles: ['admin', 'placement_officer', 'faculty', 'hod', 'student'] },
+  { label: 'Placements', icon: 'verified', path: '/placements', roles: ['admin', 'placement_officer', 'faculty', 'hod'] },
+  { label: 'Reports', icon: 'bar_chart', path: '/reports', roles: ['faculty', 'hod', 'placement_officer'] },
 ];
+
+function Sidebar({ open, setOpen, user, logoutUser, navigate, filteredNav }) {
+  return (
+    <aside
+      className="flex flex-col h-full text-white shadow-2xl z-30 transition-all duration-300"
+      style={{ width: open ? 256 : 68, background: '#0c1a2e', flexShrink: 0 }}
+    >
+      {/* Logo */}
+      <div className="p-5 flex items-center gap-3 border-b border-white/10">
+        <div
+          className="w-10 h-10 bg-white rounded-xl flex items-center justify-center shrink-0 shadow-md cursor-pointer"
+          onClick={() => setOpen(!open)}
+        >
+          <span className="material-symbols-outlined text-blue-800 text-2xl font-bold">school</span>
+        </div>
+        {open && (
+          <div className="overflow-hidden">
+            <h1 className="text-sm font-black uppercase tracking-tight leading-tight text-white">SRM Havloc</h1>
+            <p className="text-[9px] text-white/40 uppercase tracking-[0.2em]">Placement Portal</p>
+          </div>
+        )}
+      </div>
+
+      {/* User info */}
+      {open && user && (
+        <div className="px-5 py-4 border-b border-white/10">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-full bg-gradient-to-br from-blue-400 to-indigo-600 flex items-center justify-center text-white font-black text-sm shrink-0">
+              {(user?.username || 'U').charAt(0).toUpperCase()}
+            </div>
+            <div className="overflow-hidden">
+              <p className="text-white text-sm font-bold truncate">{user?.username?.split('@')[0]}</p>
+              <p className="text-white/40 text-[10px] capitalize">{user?.role?.replace('_', ' ')}</p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Nav */}
+      <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-0.5 custom-scrollbar">
+        {filteredNav.map(({ label, icon, path }) => (
+          <NavLink
+            key={path}
+            to={path}
+            className={({ isActive }) =>
+              `flex items-center gap-3 px-4 py-3 text-sm font-semibold rounded-xl transition-all group ${
+                isActive
+                  ? 'bg-white/10 text-amber-400 border-l-4 border-amber-400 pl-3'
+                  : 'text-white/60 hover:bg-white/5 hover:text-white'
+              }`
+            }
+          >
+            <span className="material-symbols-outlined text-[22px] shrink-0">{icon}</span>
+            {open && <span className="truncate">{label}</span>}
+          </NavLink>
+        ))}
+
+        {open && (
+          <div className="pt-6 pb-2">
+            <p className="px-4 text-[10px] font-black text-white/25 uppercase tracking-[0.2em]">Support</p>
+          </div>
+        )}
+        <button className={`w-full flex items-center gap-3 px-4 py-3 text-sm font-semibold text-white/60 hover:bg-white/5 hover:text-white rounded-xl ${!open ? 'justify-center' : ''}`}>
+          <span className="material-symbols-outlined text-[22px]">settings</span>
+          {open && <span>Settings</span>}
+        </button>
+        <button className={`w-full flex items-center gap-3 px-4 py-3 text-sm font-semibold text-white/60 hover:bg-white/5 hover:text-white rounded-xl ${!open ? 'justify-center' : ''}`}>
+          <span className="material-symbols-outlined text-[22px]">help</span>
+          {open && <span>Help Center</span>}
+        </button>
+      </nav>
+
+      {/* Logout */}
+      <div className="p-4 border-t border-white/10">
+        {open ? (
+          <button
+            onClick={() => { logoutUser(); navigate('/login'); }}
+            className="w-full bg-white text-blue-900 font-black py-2.5 rounded-xl flex items-center justify-center gap-2 hover:bg-slate-100 transition-all shadow-md text-sm"
+          >
+            <span className="material-symbols-outlined text-xl">logout</span>
+            Logout
+          </button>
+        ) : (
+          <button
+            onClick={() => { logoutUser(); navigate('/login'); }}
+            className="w-full flex items-center justify-center py-2.5 text-white/60 hover:text-white"
+          >
+            <span className="material-symbols-outlined text-[22px]">logout</span>
+          </button>
+        )}
+      </div>
+    </aside>
+  );
+}
+
+function TopHeader({ user }) {
+  return (
+    <header className="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-8 z-20 shrink-0">
+      <div className="flex items-center gap-4 flex-1">
+        <div className="relative w-full max-w-md group">
+          <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-[20px]">search</span>
+          <input
+            className="w-full bg-gray-50 border border-gray-100 rounded-xl py-2 pl-10 pr-4 text-sm focus:ring-2 focus:ring-blue-500/10 focus:bg-white transition-all placeholder:text-gray-400 outline-none"
+            placeholder="Search students, applications, companies..."
+            type="text"
+          />
+        </div>
+      </div>
+
+      <div className="flex items-center gap-5">
+        <button className="relative text-gray-400 hover:text-blue-600 transition-all p-1.5 hover:bg-gray-50 rounded-xl">
+          <span className="material-symbols-outlined">notifications</span>
+          <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full border-2 border-white"></span>
+        </button>
+
+        <div className="flex items-center gap-3 pl-5 border-l border-gray-100">
+          <div className="text-right hidden sm:block">
+            <p className="text-sm font-black text-gray-900 leading-none">{user?.username?.split('@')[0] || 'User'}</p>
+            <p className="text-[11px] text-gray-400 font-medium mt-0.5 capitalize">{user?.role?.replace('_', ' ')}</p>
+          </div>
+          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-400 to-indigo-600 flex items-center justify-center text-white font-black text-sm shadow-sm ring-2 ring-white">
+            {(user?.username || 'U').charAt(0).toUpperCase()}
+          </div>
+        </div>
+      </div>
+    </header>
+  );
+}
 
 export default function Layout({ children }) {
   const { user, logoutUser } = useAuth();
@@ -24,112 +147,25 @@ export default function Layout({ children }) {
 
   const filtered = navItems.filter(item => item.roles.includes(user?.role));
 
-  const handleLogout = () => {
-    logoutUser();
-    navigate('/login');
-  };
-
-  const roleLabel = {
-    admin: 'Administrator',
-    placement_officer: 'Placement Officer',
-    faculty: 'Faculty',
-    hod: 'Head of Department',
-    student: 'Student',
-  }[user?.role] || user?.role;
-
   return (
-    <div className="min-h-screen bg-[#f0f4f8] flex">
-      {/* Sidebar */}
-      <aside className={`${sidebarOpen ? 'w-64' : 'w-16'} bg-[#0d1b2a] flex flex-col transition-all duration-300 ease-in-out relative z-20 shrink-0`}>
-        
-        {/* Toggle button */}
-        <button
-          onClick={() => setSidebarOpen(!sidebarOpen)}
-          className="absolute -right-3 top-6 w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center text-white shadow-lg hover:bg-blue-500 transition-colors z-30"
-        >
-          {sidebarOpen ? <ChevronRight size={12} /> : <Menu size={12} />}
-        </button>
+    <div className="flex h-screen overflow-hidden bg-[#f8fafc]">
+      <Sidebar
+        open={sidebarOpen}
+        setOpen={setSidebarOpen}
+        user={user}
+        logoutUser={logoutUser}
+        navigate={navigate}
+        filteredNav={filtered}
+      />
 
-        {/* Logo */}
-        <div className="p-4 border-b border-white/10">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 bg-blue-600 rounded-lg flex items-center justify-center shrink-0">
-              <GraduationCap size={18} className="text-white" />
-            </div>
-            {sidebarOpen && (
-              <div className="overflow-hidden">
-                <p className="text-white font-bold text-sm leading-none">SRM HAVLOC</p>
-                <p className="text-blue-400 text-[10px] tracking-widest uppercase mt-0.5">Placement Portal</p>
-              </div>
-            )}
+      <div className="flex-1 flex flex-col overflow-hidden">
+        <TopHeader user={user} />
+        <main className="flex-1 overflow-y-auto bg-[#f8fafc] custom-scrollbar">
+          <div className="p-8 max-w-[1400px] mx-auto page-enter">
+            {children}
           </div>
-        </div>
-
-        {/* User info */}
-        {sidebarOpen && (
-          <div className="px-4 py-3 border-b border-white/10">
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-400 to-indigo-600 flex items-center justify-center text-white font-bold text-xs shrink-0">
-                {user?.username?.charAt(0)?.toUpperCase() || 'U'}
-              </div>
-              <div className="overflow-hidden">
-                <p className="text-white text-sm font-medium truncate">{user?.username}</p>
-                <p className="text-slate-400 text-xs">{roleLabel}</p>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Nav */}
-        <nav className="flex-1 py-4 px-2 space-y-1">
-          {filtered.map(({ label, icon: Icon, path }) => (
-            <NavLink
-              key={path}
-              to={path}
-              className={({ isActive }) =>
-                `flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-150 group ${
-                  isActive
-                    ? 'bg-blue-600 text-white'
-                    : 'text-slate-400 hover:bg-white/10 hover:text-white'
-                }`
-              }
-            >
-              <Icon size={18} className="shrink-0" />
-              {sidebarOpen && <span className="text-sm font-medium truncate">{label}</span>}
-            </NavLink>
-          ))}
-        </nav>
-
-        {/* Bottom */}
-        <div className="p-2 border-t border-white/10 space-y-1">
-          {sidebarOpen && (
-            <>
-              <button className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-400 hover:bg-white/10 hover:text-white transition-all">
-                <Settings size={18} />
-                <span className="text-sm font-medium">Settings</span>
-              </button>
-              <button className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-400 hover:bg-white/10 hover:text-white transition-all">
-                <HelpCircle size={18} />
-                <span className="text-sm font-medium">Help Center</span>
-              </button>
-            </>
-          )}
-          <button
-            onClick={handleLogout}
-            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-red-400 hover:bg-red-500/10 hover:text-red-300 transition-all"
-          >
-            <LogOut size={18} className="shrink-0" />
-            {sidebarOpen && <span className="text-sm font-medium">Logout</span>}
-          </button>
-        </div>
-      </aside>
-
-      {/* Main content */}
-      <main className="flex-1 overflow-auto min-h-screen">
-        <div className="p-6 max-w-[1400px] mx-auto">
-          {children}
-        </div>
-      </main>
+        </main>
+      </div>
     </div>
   );
 }
