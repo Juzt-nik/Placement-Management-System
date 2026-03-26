@@ -1,7 +1,7 @@
 require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
-const db = require("./config/db");
+const db = require("./backend/config/db");
 
 db.getConnection((err, connection) => {
   if (err) { console.error("Database connection failed ❌", err); }
