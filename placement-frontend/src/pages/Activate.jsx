@@ -1,16 +1,14 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { activateStudent, login } from '../services/api';
-import { useAuth } from '../context/AuthContext';
-import { GraduationCap, KeyRound, CheckCircle, Eye, EyeOff } from 'lucide-react';
+import { activateStudent } from '../services/api';
+import { GraduationCap, KeyRound, CheckCircle, Eye, EyeOff, Clock } from 'lucide-react';
 
 export default function Activate() {
   const [form, setForm] = useState({ email: '', registration_token: '', password: '', confirm: '' });
   const [showPw, setShowPw] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const [logging, setLogging] = useState(false);
-  const { loginUser } = useAuth();
+  const [activated, setActivated] = useState(false);
   const navigate = useNavigate();
 
   const f = (field) => (e) => setForm(p => ({ ...p, [field]: e.target.value }));
@@ -19,31 +17,80 @@ export default function Activate() {
     e.preventDefault();
     if (form.password !== form.confirm) return setError('Passwords do not match');
     if (form.password.length < 6) return setError('Password must be at least 6 characters');
-    if (!form.email.trim()) return setError('Email is required to activate and log in');
-    setLoading(true); setError('');
+    setLoading(true);
+    setError('');
     try {
-      // Step 1: Activate account
       await activateStudent({ registration_token: form.registration_token, password: form.password });
-
-      // Step 2: Auto-login immediately
-      setLogging(true);
-      const res = await login({ username: form.email.trim(), password: form.password });
-      loginUser(res.data.token, { role: res.data.role, username: form.email.trim() });
-      navigate('/student/dashboard');
+      setActivated(true);
     } catch (err) {
       const msg = err.response?.data?.message || err.response?.data?.error || '';
-      if (msg.includes('login') || msg.includes('credentials')) {
-        // Activation succeeded but auto-login failed — send to login page
-        setError('Account activated! Please log in with your email and new password.');
-        setTimeout(() => navigate('/login'), 2500);
-      } else {
-        setError(msg || 'Activation failed. Check your token and try again.');
-      }
+      setError(msg || 'Activation failed. Check your token and try again.');
     } finally {
       setLoading(false);
-      setLogging(false);
     }
   };
+
+  // ── Success / Pending screen ──────────────────────────────
+  if (activated) {
+    return (
+      <div className="min-h-screen bg-[#0a0f1e] flex items-center justify-center p-4">
+        <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:60px_60px]" />
+        <div className="relative w-full max-w-md text-center">
+          <div className="bg-[#111827] border border-white/10 rounded-2xl p-10 shadow-2xl space-y-6">
+            {/* Icon */}
+            <div className="w-20 h-20 bg-emerald-500/15 border border-emerald-500/30 rounded-full flex items-center justify-center mx-auto">
+              <CheckCircle size={40} className="text-emerald-400" />
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-white mb-2">Account Activated!</h2>
+              <p className="text-slate-400 text-sm leading-relaxed">
+                Your password has been set successfully. Your account is now
+                <span className="text-amber-400 font-semibold"> pending verification</span> by
+                your Placement Officer.
+              </p>
+            </div>
+
+            {/* Pending badge */}
+            <div className="bg-amber-500/10 border border-amber-500/25 rounded-xl px-5 py-4 flex items-start gap-3 text-left">
+              <Clock size={18} className="text-amber-400 mt-0.5 shrink-0" />
+              <div>
+                <p className="text-amber-300 font-semibold text-sm">Awaiting Officer Verification</p>
+                <p className="text-slate-400 text-xs mt-1 leading-relaxed">
+                  Your Placement Officer needs to verify your profile before you can log in.
+                  Once verified, you can sign in with your college email and the password you just set.
+                </p>
+              </div>
+            </div>
+
+            {/* What happens next */}
+            <div className="text-left space-y-3">
+              <p className="text-slate-500 text-xs font-semibold uppercase tracking-widest">What happens next</p>
+              {[
+                { step: '1', text: 'Officer reviews and verifies your profile' },
+                { step: '2', text: 'You receive confirmation to log in' },
+                { step: '3', text: 'Sign in with your email & password' },
+              ].map(({ step, text }) => (
+                <div key={step} className="flex items-center gap-3">
+                  <div className="w-6 h-6 rounded-full bg-blue-600/20 border border-blue-500/30 flex items-center justify-center text-blue-400 text-xs font-bold shrink-0">
+                    {step}
+                  </div>
+                  <p className="text-slate-400 text-sm">{text}</p>
+                </div>
+              ))}
+            </div>
+
+            <Link
+              to="/login"
+              className="block w-full bg-blue-600 hover:bg-blue-500 text-white font-semibold py-3 rounded-xl transition-all text-center"
+            >
+              Go to Login →
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#0a0f1e] flex items-center justify-center p-4">
@@ -67,26 +114,11 @@ export default function Activate() {
             <span className="text-blue-400 text-sm font-medium">Student Account Activation</span>
           </div>
           <h1 className="text-2xl font-bold text-white">Set Up Your Account</h1>
-          <p className="text-slate-400 mt-1 text-sm">Enter the token sent by your Placement Officer</p>
+          <p className="text-slate-400 mt-1 text-sm">Enter the token provided by your Placement Officer</p>
         </div>
 
         <div className="bg-[#111827] border border-white/10 rounded-2xl p-8 shadow-2xl">
           <form onSubmit={handleSubmit} className="space-y-5">
-            {/* Email */}
-            <div>
-              <label className="block text-sm font-medium text-slate-300 mb-2">
-                Your College Email <span className="text-red-400">*</span>
-              </label>
-              <input
-                type="email"
-                value={form.email}
-                onChange={f('email')}
-                className="w-full px-4 py-3 bg-[#1a2234] border border-white/10 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition-all"
-                placeholder="yourname@college.edu"
-                required
-              />
-              <p className="text-slate-500 text-xs mt-1">This is your login username</p>
-            </div>
 
             {/* Token */}
             <div>
@@ -106,7 +138,9 @@ export default function Activate() {
 
             {/* Password */}
             <div>
-              <label className="block text-sm font-medium text-slate-300 mb-2">Create Password <span className="text-red-400">*</span></label>
+              <label className="block text-sm font-medium text-slate-300 mb-2">
+                Create Password <span className="text-red-400">*</span>
+              </label>
               <div className="relative">
                 <input
                   type={showPw ? 'text' : 'password'}
@@ -125,7 +159,9 @@ export default function Activate() {
 
             {/* Confirm */}
             <div>
-              <label className="block text-sm font-medium text-slate-300 mb-2">Confirm Password <span className="text-red-400">*</span></label>
+              <label className="block text-sm font-medium text-slate-300 mb-2">
+                Confirm Password <span className="text-red-400">*</span>
+              </label>
               <input
                 type="password"
                 value={form.confirm}
@@ -137,25 +173,22 @@ export default function Activate() {
             </div>
 
             {error && (
-              <div className={`border rounded-xl px-4 py-3 text-sm ${
-                error.includes('activated') ? 'bg-green-500/10 border-green-500/30 text-green-400' : 'bg-red-500/10 border-red-500/30 text-red-400'
-              }`}>
-                {error.includes('activated') && <CheckCircle size={14} className="inline mr-2" />}
+              <div className="bg-red-500/10 border border-red-500/30 rounded-xl px-4 py-3 text-red-400 text-sm">
                 {error}
               </div>
             )}
 
             <button
               type="submit"
-              disabled={loading || logging}
+              disabled={loading}
               className="w-full bg-blue-600 hover:bg-blue-500 text-white font-semibold py-3 rounded-xl transition-all flex items-center justify-center gap-2 disabled:opacity-50"
             >
-              {(loading || logging) ? (
+              {loading ? (
                 <>
                   <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                  {logging ? 'Logging you in...' : 'Activating...'}
+                  Activating...
                 </>
-              ) : 'Activate & Go to Dashboard →'}
+              ) : 'Activate Account →'}
             </button>
           </form>
 

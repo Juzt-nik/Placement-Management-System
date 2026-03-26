@@ -13,6 +13,78 @@ const emptyForm = {
 const ORG_TYPES = ['Corporate', 'Academic', 'Research', 'Government', 'Startup'];
 const typeColor = { Corporate: 'bg-blue-100 text-blue-700', Startup: 'bg-orange-100 text-orange-700', Academic: 'bg-purple-100 text-purple-700', Research: 'bg-indigo-100 text-indigo-700', Government: 'bg-green-100 text-green-700' };
 
+function CompanyForm({ form, onFieldChange, onSubmit, onCancel, saving, error, label }) {
+  const f = field => e => onFieldChange(field, e.target.value);
+  return (
+    <form onSubmit={onSubmit} className="space-y-5">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="sm:col-span-2">
+          <label className="block text-xs font-medium text-slate-600 mb-1.5">Company Name <span className="text-red-500">*</span></label>
+          <input value={form.organization_name} onChange={f('organization_name')} required
+            className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-800 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all"
+            placeholder="e.g. Tata Consultancy Services" />
+        </div>
+        <div>
+          <label className="block text-xs font-medium text-slate-600 mb-1.5">Company Type <span className="text-red-500">*</span></label>
+          <select value={form.organization_type} onChange={f('organization_type')} required
+            className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-700 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all">
+            <option value="">Select type</option>
+            {ORG_TYPES.map(t => <option key={t}>{t}</option>)}
+          </select>
+        </div>
+        <div>
+          <label className="block text-xs font-medium text-slate-600 mb-1.5">Location <span className="text-red-500">*</span></label>
+          <input value={form.location} onChange={f('location')} required
+            className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-800 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all"
+            placeholder="Chennai, Tamil Nadu" />
+        </div>
+        <div>
+          <label className="block text-xs font-medium text-slate-600 mb-1.5">Contact Details <span className="text-red-500">*</span></label>
+          <input value={form.contact_details} onChange={f('contact_details')} required
+            className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-800 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all"
+            placeholder="hr@company.com or phone" />
+        </div>
+        <div>
+          <label className="block text-xs font-medium text-slate-600 mb-1.5">Website</label>
+          <input type="url" value={form.website} onChange={f('website')}
+            className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-800 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all"
+            placeholder="https://company.com" />
+        </div>
+      </div>
+
+      <div className="bg-emerald-50 border border-emerald-100 rounded-xl p-4">
+        <p className="text-xs font-semibold uppercase tracking-wider text-emerald-700 mb-3 flex items-center gap-2">
+          <Calendar size={12} /> Placement Drive Window
+        </p>
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="block text-xs font-medium text-slate-600 mb-1.5">Opening Date</label>
+            <input type="date" value={form.drive_opening_date} onChange={f('drive_opening_date')}
+              className="w-full px-3 py-2.5 bg-white border border-emerald-200 rounded-xl text-sm text-slate-800 focus:outline-none focus:border-emerald-500 transition-all" />
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-slate-600 mb-1.5">Closing Date</label>
+            <input type="date" value={form.drive_closing_date} onChange={f('drive_closing_date')}
+              className="w-full px-3 py-2.5 bg-white border border-emerald-200 rounded-xl text-sm text-slate-800 focus:outline-none focus:border-emerald-500 transition-all" />
+          </div>
+        </div>
+      </div>
+
+      {error && <div className="bg-red-50 border border-red-200 rounded-xl px-4 py-3 text-red-600 text-sm">{error}</div>}
+
+      <div className="flex justify-end gap-3">
+        <button type="button" onClick={onCancel}
+          className="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-medium rounded-xl transition-all">Cancel</button>
+        <button type="submit" disabled={saving}
+          className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-semibold px-5 py-2.5 rounded-xl transition-all disabled:opacity-50">
+          {saving && <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />}
+          {label}
+        </button>
+      </div>
+    </form>
+  );
+}
+
 export default function OfficerCompanies() {
   const [orgs, setOrgs] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -34,6 +106,7 @@ export default function OfficerCompanies() {
   };
 
   const f = field => e => setForm(p => ({ ...p, [field]: e.target.value }));
+  const handleFieldChange = (field, value) => setForm(p => ({ ...p, [field]: value }));
 
   // Pack extra fields into contact_details as JSON so they persist to DB
   const packForm = (formData) => {
@@ -92,77 +165,6 @@ export default function OfficerCompanies() {
   );
 
   if (loading) return <OfficerLayout><Spinner /></OfficerLayout>;
-
-  const CompanyForm = ({ onSubmit, label }) => (
-    <form onSubmit={onSubmit} className="space-y-5">
-      {/* Basic info */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div className="sm:col-span-2">
-          <label className="block text-xs font-medium text-slate-600 mb-1.5">Company Name <span className="text-red-500">*</span></label>
-          <input value={form.organization_name} onChange={f('organization_name')} required
-            className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-800 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all"
-            placeholder="e.g. Tata Consultancy Services" />
-        </div>
-        <div>
-          <label className="block text-xs font-medium text-slate-600 mb-1.5">Company Type <span className="text-red-500">*</span></label>
-          <select value={form.organization_type} onChange={f('organization_type')} required
-            className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-700 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all">
-            <option value="">Select type</option>
-            {ORG_TYPES.map(t => <option key={t}>{t}</option>)}
-          </select>
-        </div>
-        <div>
-          <label className="block text-xs font-medium text-slate-600 mb-1.5">Location <span className="text-red-500">*</span></label>
-          <input value={form.location} onChange={f('location')} required
-            className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-800 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all"
-            placeholder="Chennai, Tamil Nadu" />
-        </div>
-        <div>
-          <label className="block text-xs font-medium text-slate-600 mb-1.5">Contact Details <span className="text-red-500">*</span></label>
-          <input value={form.contact_details} onChange={f('contact_details')} required
-            className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-800 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all"
-            placeholder="hr@company.com or phone" />
-        </div>
-        <div>
-          <label className="block text-xs font-medium text-slate-600 mb-1.5">Website</label>
-          <input type="url" value={form.website} onChange={f('website')}
-            className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-800 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all"
-            placeholder="https://company.com" />
-        </div>
-      </div>
-
-      {/* Placement drive dates */}
-      <div className="bg-emerald-50 border border-emerald-100 rounded-xl p-4">
-        <p className="text-xs font-semibold uppercase tracking-wider text-emerald-700 mb-3 flex items-center gap-2">
-          <Calendar size={12} /> Placement Drive Window
-        </p>
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="block text-xs font-medium text-slate-600 mb-1.5">Opening Date</label>
-            <input type="date" value={form.drive_opening_date} onChange={f('drive_opening_date')}
-              className="w-full px-3 py-2.5 bg-white border border-emerald-200 rounded-xl text-sm text-slate-800 focus:outline-none focus:border-emerald-500 transition-all" />
-          </div>
-          <div>
-            <label className="block text-xs font-medium text-slate-600 mb-1.5">Closing Date</label>
-            <input type="date" value={form.drive_closing_date} onChange={f('drive_closing_date')}
-              className="w-full px-3 py-2.5 bg-white border border-emerald-200 rounded-xl text-sm text-slate-800 focus:outline-none focus:border-emerald-500 transition-all" />
-          </div>
-        </div>
-      </div>
-
-      {error && <div className="bg-red-50 border border-red-200 rounded-xl px-4 py-3 text-red-600 text-sm">{error}</div>}
-
-      <div className="flex justify-end gap-3">
-        <button type="button" onClick={() => { setShowModal(false); setEditModal(false); }}
-          className="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-medium rounded-xl transition-all">Cancel</button>
-        <button type="submit" disabled={saving}
-          className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-semibold px-5 py-2.5 rounded-xl transition-all disabled:opacity-50">
-          {saving && <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />}
-          {label}
-        </button>
-      </div>
-    </form>
-  );
 
   return (
     <OfficerLayout>
@@ -270,7 +272,15 @@ export default function OfficerCompanies() {
               <button onClick={() => { setShowModal(false); setEditModal(false); }} className="w-8 h-8 rounded-lg hover:bg-slate-100 flex items-center justify-center text-slate-400">✕</button>
             </div>
             <div className="p-6">
-              <CompanyForm onSubmit={showModal ? handleCreate : handleEdit} label={showModal ? 'Register Company' : 'Save Changes'} />
+              <CompanyForm
+                form={form}
+                onFieldChange={handleFieldChange}
+                onSubmit={showModal ? handleCreate : handleEdit}
+                onCancel={() => { setShowModal(false); setEditModal(false); }}
+                saving={saving}
+                error={error}
+                label={showModal ? 'Register Company' : 'Save Changes'}
+              />
             </div>
           </div>
         </div>

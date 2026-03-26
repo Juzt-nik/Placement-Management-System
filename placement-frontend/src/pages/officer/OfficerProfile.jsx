@@ -10,7 +10,7 @@ const DESIGNATIONS = [
 const DEPARTMENTS = ['Training & Placement Cell', 'CSE', 'IT', 'ECE', 'EEE', 'MECH', 'CIVIL', 'AIDS', 'AIML', 'Central Placement', 'Other'];
 
 export default function OfficerProfile() {
-  const { user } = useAuth();
+  const { user, updateUser } = useAuth();
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -55,6 +55,7 @@ export default function OfficerProfile() {
     setSaved(false);
     try {
       await updateOfficerProfile(form);
+      updateUser({ name: form.name, department: form.department });
       setSaved(true);
       loadProfile();
       setTimeout(() => setSaved(false), 3000);

@@ -39,10 +39,10 @@ function Sidebar({ open, setOpen, user, logoutUser, navigate, filteredNav }) {
         <div className="px-5 py-4 border-b border-white/10">
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 rounded-full bg-gradient-to-br from-blue-400 to-indigo-600 flex items-center justify-center text-white font-black text-sm shrink-0">
-              {(user?.username || 'U').charAt(0).toUpperCase()}
+              {(user?.name || user?.username || 'U').charAt(0).toUpperCase()}
             </div>
             <div className="overflow-hidden">
-              <p className="text-white text-sm font-bold truncate">{user?.username?.split('@')[0]}</p>
+              <p className="text-white text-sm font-bold truncate">{user?.name || user?.username?.split('@')[0]}</p>
               <p className="text-white/40 text-[10px] capitalize">{user?.role?.replace('_', ' ')}</p>
             </div>
           </div>
@@ -128,11 +128,11 @@ function TopHeader({ user }) {
 
         <div className="flex items-center gap-3 pl-5 border-l border-gray-100">
           <div className="text-right hidden sm:block">
-            <p className="text-sm font-black text-gray-900 leading-none">{user?.username?.split('@')[0] || 'User'}</p>
+            <p className="text-sm font-black text-gray-900 leading-none">{user?.name || user?.username?.split('@')[0] || 'User'}</p>
             <p className="text-[11px] text-gray-400 font-medium mt-0.5 capitalize">{user?.role?.replace('_', ' ')}</p>
           </div>
           <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-400 to-indigo-600 flex items-center justify-center text-white font-black text-sm shadow-sm ring-2 ring-white">
-            {(user?.username || 'U').charAt(0).toUpperCase()}
+            {(user?.name || user?.username || 'U').charAt(0).toUpperCase()}
           </div>
         </div>
       </div>

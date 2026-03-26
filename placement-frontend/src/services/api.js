@@ -1,10 +1,8 @@
 import axios from 'axios';
 
 const BASE_URL = 'http://localhost:5000/api';
-
 const api = axios.create({ baseURL: BASE_URL });
 
-// Attach token to every request
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem('token');
   if (token) config.headers.Authorization = `Bearer ${token}`;
@@ -18,6 +16,7 @@ export const register = (data) => api.post('/auth/register', data);
 // Students
 export const getStudents = () => api.get('/students');
 export const getStudent = (id) => api.get(`/students/${id}`);
+export const getStudentProfile = (id) => api.get(`/students/${id}/profile`);
 export const createStudent = (data) => api.post('/students', data);
 export const updateStudent = (id, data) => api.put(`/students/${id}`, data);
 export const deleteStudent = (id) => api.delete(`/students/${id}`);
@@ -31,7 +30,14 @@ export const createOrganization = (data) => api.post('/organizations', data);
 export const updateOrganization = (id, data) => api.put(`/organizations/${id}`, data);
 export const deleteOrganization = (id) => api.delete(`/organizations/${id}`);
 
-// Internships
+// Opportunities (job listings the officer posts, students apply to)
+export const getOpportunities = () => api.get('/opportunities');
+export const getOpportunity = (id) => api.get(`/opportunities/${id}`);
+export const createOpportunity = (data) => api.post('/opportunities', data);
+export const updateOpportunity = (id, data) => api.put(`/opportunities/${id}`, data);
+export const deleteOpportunity = (id) => api.delete(`/opportunities/${id}`);
+
+// Internships (confirmed internship records, after student is accepted)
 export const getInternships = () => api.get('/internships');
 export const getInternship = (id) => api.get(`/internships/${id}`);
 export const createInternship = (data) => api.post('/internships', data);
@@ -39,7 +45,8 @@ export const updateInternship = (id, data) => api.put(`/internships/${id}`, data
 export const deleteInternship = (id) => api.delete(`/internships/${id}`);
 
 // Applications
-export const getApplications = () => api.get('/applications');
+export const getApplications = () => api.get('/applications');            // staff
+export const getMyApplications = () => api.get('/applications/my');       // student
 export const getApplication = (id) => api.get(`/applications/${id}`);
 export const createApplication = (data) => api.post('/applications', data);
 export const deleteApplication = (id) => api.delete(`/applications/${id}`);
@@ -53,24 +60,22 @@ export const updateRound = (roundId, data) => api.put(`/rounds/${roundId}`, data
 export const getPlacements = () => api.get('/placements');
 export const createPlacement = (data) => api.post('/placements', data);
 
-// Reports
+// Reports / Dashboard
 export const getDashboard = (filters = {}) => {
   const params = new URLSearchParams(filters).toString();
   return api.get(`/reports/dashboard${params ? '?' + params : ''}`);
 };
 
-export default api;
-
-// Staff Registration (admin only)
+// Staff Registration
 export const registerOfficer = (data) => api.post('/auth/register/officer', data);
 export const registerFaculty = (data) => api.post('/auth/register/faculty', data);
 export const listFacultyAccounts = () => api.get('/auth/faculty');
 export const listOfficerAccounts = () => api.get('/auth/officers');
 
-// Faculty profile
+// Profiles
 export const getFacultyProfile = () => api.get('/auth/profile/faculty');
 export const updateFacultyProfile = (data) => api.put('/auth/profile/faculty', data);
-
-// Officer profile
 export const getOfficerProfile = () => api.get('/auth/profile/officer');
 export const updateOfficerProfile = (data) => api.put('/auth/profile/officer', data);
+
+export default api;
