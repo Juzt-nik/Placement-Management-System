@@ -1,22 +1,19 @@
 const mysql = require("mysql2");
 
-const db = mysql.createPool({
-  host: "localhost",
-  user: "root",
-  password: "Sag@2006nik",
-  database: "placement_db",
-  waitForConnections: true,
-  connectionLimit: 10,
-  queueLimit: 0,
+const connection = mysql.createConnection({
+  host: process.env.DB_HOST,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_NAME,
+  port: process.env.DB_PORT,
 });
 
-// Test connection on startup
-db.query("SELECT DATABASE()", (err, result) => {
+connection.connect((err) => {
   if (err) {
-    console.error("❌ DB connection error:", err.message);
+    console.error("DB connection failed:", err);
   } else {
-    console.log("✅ Backend connected to DB:", result[0]["DATABASE()"]);
+    console.log("Connected to Railway MySQL");
   }
 });
 
-module.exports = db;
+module.exports = connection;
